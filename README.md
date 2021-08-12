@@ -1,9 +1,5 @@
-Wear OS Tile API Code Lab Repository
+Wear OS Tiles using Jetpack Tiles library
 ======================================
-The Wear OS Tiles provide easy access to the information and actions users need in order to get
-things done.
 
-This repository is to be used in conjunction with the [Wear OS Tile API Code Lab](https://developer.android.com/codelabs/wear-tiles)
-to teach developers how to create a Tile.
-
-To learn more about Tiles, check out [Tile guide](https://developer.android.com/training/articles/wear-tiles).
+## Screenshots
+<img src="screenshots/screenshot_01.png" width="320" height="640"> <img src="screenshots/screenshot_02.png" width="320" height="640"> <img src="screenshots/screenshot_03.png" width="320" height="640">

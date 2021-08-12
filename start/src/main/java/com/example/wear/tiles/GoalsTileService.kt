@@ -81,6 +81,8 @@ class GoalsTileService : TileProviderService() {
 
     // TODO: Build a Tile.
     override fun onTileRequest(requestParams: TileRequest) = serviceScope.future {
+        val goalProgress = GoalsRepository.getGoalProgress()
+        val deviceParams = requestParams.deviceParameters
 
         // Creates Tile.
         Tile.builder()
@@ -93,7 +95,7 @@ class GoalsTileService : TileProviderService() {
                 Timeline.builder().addTimelineEntry(
                     TimelineEntry.builder().setLayout(
                         Layout.builder().setRoot(
-                            Text.builder().setText(getString(R.string.placeholder_text))
+                            rootBoxLayout(goalProgress,deviceParams!!)
                         )
                     )
                 )
@@ -104,7 +106,12 @@ class GoalsTileService : TileProviderService() {
     override fun onResourcesRequest(requestParams: ResourcesRequest) = serviceScope.future {
         Resources.builder()
             .setVersion(RESOURCES_VERSION)
-            // No Resources quite yet!
+            .addIdToImageMapping(
+                ID_IMAGE_START_RUN,
+                ImageResource.builder().setAndroidResourceByResId(
+                    AndroidImageResourceByResId.builder().setResourceId(R.drawable.ic_run)
+                )
+            )
             .build()
     }
 
@@ -116,10 +123,85 @@ class GoalsTileService : TileProviderService() {
     }
 
     // TODO: Create root Box layout and content.
+    fun rootBoxLayout(goalProgress: GoalProgress, deviceParams: DeviceParameters): Box {
+        return Box.builder()
+            .setWidth(expand()).setHeight(expand())
+            .addContent(progressArc(goalProgress.percentage))
+            .addContent(
+                Column.builder()
+                    .addContent(
+                        currentStepsText(goalProgress.current.toString(),deviceParams)
+                    )
+                    .addContent(
+                        totalStepsCount(
+                            resources.getString(R.string.goal, goalProgress.goal),
+                            deviceParams
+                        )
+                    )
+                    .addContent(
+                        Spacer.builder().setHeight(VERTICAL_SPACING_HEIGHT)
+                    )
+                    .addContent(
+                        startRunButton()
+                    )
+            )
+            .build()
+    }
 
+    fun startRunButton(): Image {
+        return Image.builder()
+            .setWidth(BUTTON_SIZE)
+            .setHeight(BUTTON_SIZE)
+            .setResourceId(ID_IMAGE_START_RUN)
+            .setModifiers(
+                Modifiers.builder()
+                    .setPadding(
+                        Padding.builder()
+                            .setStart(BUTTON_PADDING)
+                            .setEnd(BUTTON_PADDING)
+                            .setTop(BUTTON_PADDING)
+                            .setBottom(BUTTON_PADDING)
+                    )
+                    .setBackground(
+                        Background.builder()
+                            .setCorner(Corner.builder().setRadius(BUTTON_RADIUS))
+                            .setColor(argb(ContextCompat.getColor(this,R.color.primaryDark)))
+                    )
+                    .setClickable(
+                        Clickable.builder()
+                            .setId(ID_CLICK_START_RUN)
+                            .setOnClick(ActionBuilders.LoadAction.builder())
+                    )
+            ).build()
+    }
+
+    fun currentStepsText(current : String, deviceParams: DeviceParameters): Text{
+        return Text.builder()
+            .setText(current)
+            .setFontStyle(FontStyles.display2(deviceParams))
+            .build()
+    }
+
+    fun totalStepsCount(goal : String, deviceParams: DeviceParameters): Text {
+        return Text.builder()
+            .setText(goal)
+            .setFontStyle(FontStyles.title3(deviceParams))
+            .build()
+    }
 
     // TODO: Create a function that constructs an Arc representation of the current step progress.
-
+    fun progressArc(percentage : Float): Arc {
+        return Arc.builder()
+            .addContent(
+                ArcLine.builder()
+                    .setLength(degrees(percentage * ARC_TOTAL_DEGREES))
+                    .setColor(argb(ContextCompat.getColor(this,R.color.primary)))
+                    .setThickness(PROGRESS_BAR_THICKNESS)
+            )
+            .setAnchorAngle(degrees(0.0f))
+            .setAnchorType(ARC_ANCHOR_START)
+            .build()
+    }
 
     // TODO: Create functions that construct/stylize Text representations of the step count & goal.
 
